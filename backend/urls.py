@@ -17,15 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from api.views import LikeToggleView
-from .views import LikeToggleAPIView, CommentListCreateView # type: ignore
+from api.views import LikeToggleView, CommentListCreateView
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/accounts/', include('accounts.urls'))
-]
-
-
-urlpatterns += [
+    path('api/accounts/', include('accounts.urls')),
     path('posts/<int:post_id>/like/', LikeToggleView.as_view(), name='like-toggle'),
     path('posts/<int:post_id>/comments/', CommentListCreateView.as_view(), name='comment-list-create'),
 ]
