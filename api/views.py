@@ -3,15 +3,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import Post, Like, Comment, UserProfile, Follow
-from .serializers import CommentSerializer, UserProfileSerializer
-from drf_yasg.utils import swagger_auto_schema
+from .serializers import CommentSerializer, UserProfileSerializer,FollowUnfollowSerializer,LikeToggleSerializer
 from django.contrib.auth.models import User
 
 
 class LikeToggleView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    @swagger_auto_schema(operation_description="Like or unlike a post by its ID.")
+    serializer_class = LikeToggleSerializer
     def post(self, request, post_id):
         post = get_object_or_404(Post, id=post_id)
         like, created = Like.objects.get_or_create(user=request.user, post=post)
@@ -35,11 +34,11 @@ class CommentListCreateView(generics.ListCreateAPIView):
         post_id = self.kwargs['post_id']
         serializer.save(user=self.request.user, post_id=post_id)
 
-    @swagger_auto_schema(operation_description="Get comments for a specific post.")
+    
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
-    @swagger_auto_schema(operation_description="Add a comment to a specific post.")
+    
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
@@ -78,6 +77,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 class FollowUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    serializer_class = FollowUnfollowSerializer
     def post(self, request, user_id):
         user_to_follow = get_object_or_404(User, id=user_id)
         if request.user == user_to_follow:
@@ -92,6 +92,7 @@ class FollowUserView(APIView):
 class UnfollowUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    serializer_class = FollowUnfollowSerializer
     def post(self, request, user_id):
         user_to_unfollow = get_object_or_404(User, id=user_id)
         follow = Follow.objects.filter(follower=request.user, following=user_to_unfollow).first()

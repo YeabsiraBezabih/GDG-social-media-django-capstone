@@ -16,3 +16,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])  
         user.save()
         return user
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()

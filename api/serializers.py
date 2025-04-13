@@ -45,3 +45,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ['id', 'username', 'email', 'bio']
+
+
+class FollowUnfollowSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField(read_only=True)
+
+
+class LikeToggleSerializer(serializers.Serializer):
+    post_id = serializers.IntegerField(read_only=True)
