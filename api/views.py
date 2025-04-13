@@ -2,9 +2,10 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-from .models import Post, Like, Comment
-from .serializers import CommentSerializer
+from .models import Post, Like, Comment, UserProfile, Follow
+from .serializers import CommentSerializer, UserProfileSerializer
 from drf_yasg.utils import swagger_auto_schema
+from django.contrib.auth.models import User
 
 
 class LikeToggleView(APIView):
@@ -41,3 +42,61 @@ class CommentListCreateView(generics.ListCreateAPIView):
     @swagger_auto_schema(operation_description="Add a comment to a specific post.")
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
+
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        user_id = self.kwargs['user_id']
+        user = get_object_or_404(User, id=user_id)  # Check the User model first
+        
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        return user_profile
+
+    def update(self, request, *args, **kwargs):
+        user_profile = self.get_object()
+        user = user_profile.user
+
+        
+        user.username = request.data.get('username', user.username)
+        user.save()
+
+       
+        user_profile.bio = request.data.get('bio', user_profile.bio)
+        user_profile.save()
+
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "bio": user_profile.bio
+        }, status=status.HTTP_200_OK)
+
+
+class FollowUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        user_to_follow = get_object_or_404(User, id=user_id)
+        if request.user == user_to_follow:
+            return Response({"message": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        follow, created = Follow.objects.get_or_create(follower=request.user, following=user_to_follow)
+        if created:
+            return Response({"message": f"You are now following {user_to_follow.username}"}, status=status.HTTP_201_CREATED)
+        return Response({"message": f"You are already following {user_to_follow.username}"}, status=status.HTTP_200_OK)
+
+
+class UnfollowUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        user_to_unfollow = get_object_or_404(User, id=user_id)
+        follow = Follow.objects.filter(follower=request.user, following=user_to_unfollow).first()
+
+        if follow:
+            follow.delete()
+            return Response({"message": f"You have unfollowed {user_to_unfollow.username}"}, status=status.HTTP_200_OK)
+        return Response({"message": f"You are not following {user_to_unfollow.username}"}, status=status.HTTP_400_BAD_REQUEST)

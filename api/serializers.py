@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Post, Like, Comment
+from django.contrib.auth.models import User
+from .models import Post, Like, Comment, UserProfile
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -34,3 +35,13 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'user', 'post', 'content', 'timestamp']
         read_only_fields = ['user', 'timestamp']
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    bio = serializers.CharField(required=False)
+
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'username', 'email', 'bio']
