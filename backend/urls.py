@@ -16,11 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from api.views import LikeToggleView, CommentListCreateView
+from api.views import LikeToggleView, CommentListCreateView,UserProfileView,FollowUserView,UnfollowUserView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),
     path('posts/<int:post_id>/like/', LikeToggleView.as_view(), name='like-toggle'),
     path('posts/<int:post_id>/comments/', CommentListCreateView.as_view(), name='comment-list-create'),
+    path('api/users/<int:user_id>', UserProfileView.as_view(), name='user-profile'),
+    path('', include('accounts.urls')),
+    path('api/users/<int:user_id>/follow/', FollowUserView.as_view(), name='follow-user'),
+    path('api/users/<int:user_id>/unfollow/', UnfollowUserView.as_view(), name='unfollow-user'),
+    #drsf_spectacular_urls
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
