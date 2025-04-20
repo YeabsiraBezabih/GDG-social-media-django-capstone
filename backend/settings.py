@@ -175,11 +175,3 @@ SWAGGER_SETTINGS = {
     'DISPLAY_OPERATION_ID': True,
     'SUPPORTED_SUBMIT_METHODS': ['get', 'post', 'put', 'delete', 'patch'],
 }
-
-from django.contrib import admin
-from django.urls import path, include
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('api.urls')),  # Ensure this points to your app's URLs
-]
